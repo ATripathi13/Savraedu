@@ -7,4 +7,4 @@ class ActivityCreate(BaseModel):
     activity_type: str
     created_at: datetime
     subject: str
-    class_name: str
+    grade: int

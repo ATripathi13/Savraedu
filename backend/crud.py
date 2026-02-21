@@ -2,9 +2,8 @@ import hashlib
 from sqlalchemy.orm import Session
 from models import Activity
 
-
 def generate_hash(data):
-    raw = f"{data.teacher_id}-{data.activity_type}-{data.created_at}-{data.subject}-{data.class_name}"
+    raw = f"{data.teacher_id}-{data.activity_type}-{data.created_at}-{data.subject}-{data.grade}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
@@ -16,7 +15,7 @@ def create_activity(db: Session, activity):
     ).first()
 
     if existing:
-        return existing  # duplicate ignored
+        return None  # duplicate skipped
 
     db_activity = Activity(
         teacher_id=activity.teacher_id,
@@ -24,7 +23,7 @@ def create_activity(db: Session, activity):
         activity_type=activity.activity_type,
         created_at=activity.created_at,
         subject=activity.subject,
-        class_name=activity.class_name,
+        grade=activity.grade,
         hash_key=hash_key,
     )
 
