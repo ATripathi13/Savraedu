@@ -1,3 +1,4 @@
+from ast import In
 from sqlalchemy import Column, String, DateTime
 from database import Base
 import uuid
@@ -11,7 +12,7 @@ class Activity(Base):
     activity_type = Column(String)  # lesson / quiz / assessment
     created_at = Column(DateTime)
     subject = Column(String)
-    class_name = Column(String)
+    grade = Column(int)
 
     # Prevent duplicate entries
     hash_key = Column(String, unique=True, index=True)
