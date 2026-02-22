@@ -61,11 +61,11 @@ body {
 }
 
 .logo-container {
-  padding-left: 5px;
+  padding-left: 12px;
 }
 
 .logo-img {
-  width: 100px;
+  width: 120px;
   height: auto;
   display: block;
 }
@@ -421,4 +421,175 @@ body {
   font-size: 18px;
   color: var(--primary);
   font-weight: 600;
+}
+
+.header-left-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.teacher-profile-info h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.teacher-profile-info p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.teacher-meta {
+  margin-bottom: 24px;
+}
+
+.teacher-meta p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.teacher-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mini-tabs {
+  transform: scale(0.9);
+  transform-origin: right;
+}
+
+/* KPI Light Variants */
+.pink-light {
+  background-color: #fceef0 !important;
+}
+
+.green-light {
+  background-color: #ebf7ec !important;
+}
+
+.yellow-light {
+  background-color: #fef9e9 !important;
+}
+
+.gray-light {
+  background-color: #f8f9fa !important;
+}
+
+.alert-card {
+  border: 1px solid #eee;
+}
+
+.engagement-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+/* Bar Chart Customizations */
+.custom-legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot.blue {
+  background-color: #3498db;
+}
+
+.dot.orange {
+  background-color: #f39c12;
+}
+
+/* Recent Activity Empty State */
+.empty-activity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #fcf4fc;
+  /* Light purple tint from image */
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.empty-icon {
+  color: #d2b4de;
+  margin-bottom: 12px;
+}
+
+.empty-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.empty-sub {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+/* Page Footer */
+.page-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 32px;
+}
+
+.export-btn {
+  background-color: #e67e22;
+  /* Orange from image */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.export-btn:hover {
+  background-color: #d35400;
 }
