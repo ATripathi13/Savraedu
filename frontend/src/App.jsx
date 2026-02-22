@@ -16,7 +16,7 @@ import {
 import logo from "./assets/logo.webp";
 import "./App.css";
 
-const API = "http://127.0.0.1:8000";
+const API = "https://savraedu.onrender.com";
 
 // Simple SVG Icons to match the image
 const Icons = {
