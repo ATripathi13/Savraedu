@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, DateTime, Integer
-from database import Base
+from backend.database import Base
 import uuid
 
 class Activity(Base):

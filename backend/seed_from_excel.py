@@ -1,7 +1,7 @@
 import pandas as pd
-from database import SessionLocal
-from crud import create_activity
-from schemas import ActivityCreate
+from backend.database import SessionLocal
+from backend.crud import create_activity
+from backend.schemas import ActivityCreate
 
 FILE_PATH = "activities.xlsx"
 
