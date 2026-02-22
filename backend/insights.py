@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import Activity
+from backend.models import Activity
 from collections import defaultdict
 from datetime import datetime, timedelta
 
