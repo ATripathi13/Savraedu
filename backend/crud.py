@@ -1,6 +1,6 @@
 import hashlib
 from sqlalchemy.orm import Session
-from models import Activity
+from backend.models import Activity
 
 def generate_hash(data):
     raw = f"{data.teacher_id}-{data.activity_type}-{data.created_at}-{data.subject}-{data.grade}"
