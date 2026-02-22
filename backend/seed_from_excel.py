@@ -25,6 +25,7 @@ def seed_from_excel():
         return
 
     df = pd.read_excel(FILE_PATH)
+    df.columns = [c.lower() for c in df.columns]
     df["created_at"] = pd.to_datetime(df["created_at"])
 
     for _, row in df.iterrows():
