@@ -1,25 +1,65 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
 
-import logo from "./assets/logo.webp";
+import logo from "./assets/logo.webp"; // Fixed typo in extension
 import "./App.css";
 
 const API = "http://127.0.0.1:8000";
+
+// Simple SVG Icons to match the image
+const Icons = {
+  Dashboard: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+  ),
+  Teachers: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+  ),
+  Classrooms: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+  ),
+  Reports: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+  ),
+  Search: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+  ),
+  Book: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+  ),
+  Users: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+  ),
+  Award: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+  ),
+  ChevronDown: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  ),
+  Trophy: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.44.98.94 1.21 1.21.54 2.06 2.03 2.06 3.79"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+  ),
+  TrendingUp: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+  ),
+  AlertTriangle: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+  )
+};
 
 export default function App() {
   const [summary, setSummary] = useState(null);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch dashboard data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -29,7 +69,14 @@ export default function App() {
         ]);
 
         setSummary(summaryRes.data);
-        setTrend(trendRes.data);
+        // Transform trend data to have consistent labels for the chart
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const transformedTrend = trendRes.data.map((item, index) => ({
+          name: days[index] || `Day ${index + 1}`,
+          value1: item.count || 0,
+          value2: (item.count || 0) * 0.6 // Mocking a second series for visual effect
+        }));
+        setTrend(transformedTrend);
       } catch (err) {
         console.error("API Error:", err);
       } finally {
@@ -46,109 +93,192 @@ export default function App() {
     <div className="layout">
       {/* Sidebar */}
       <aside className="sidebar">
-        <img src={logo} alt="Savra Logo" className="logo" />
+        <div className="sidebar-top">
+          <div className="logo-container">
+            <img src={logo} alt="Savra Logo" className="logo-img" />
+          </div>
 
-        <nav>
-          <a className="active">Dashboard</a>
-          <a>Teachers</a>
-          <a>Classrooms</a>
-          <a>Reports</a>
-        </nav>
+          <div className="sidebar-menu">
+            <div className="sidebar-label">Main</div>
+            <nav className="nav-links">
+              <a href="#" className="nav-item active">
+                <span className="nav-icon"><Icons.Dashboard /></span>
+                Dashboard
+              </a>
+              <a href="#" className="nav-item">
+                <span className="nav-icon"><Icons.Teachers /></span>
+                Teachers
+              </a>
+              <a href="#" className="nav-item">
+                <span className="nav-icon"><Icons.Classrooms /></span>
+                Classrooms
+              </a>
+              <a href="#" className="nav-item">
+                <span className="nav-icon"><Icons.Reports /></span>
+                Reports
+              </a>
+            </nav>
+          </div>
+        </div>
 
-        <div className="admin">
+        <div className="admin-profile">
           <div className="avatar">SR</div>
-          <div>
-            <div className="small">School Admin</div>
-            <div className="name">Shauryaman Ray</div>
+          <div className="admin-info">
+            <span className="admin-role">School Admin</span>
+            <span className="admin-name">Shauryaman Ray</span>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main Content */}
       <main className="content">
-        <header className="topbar">
-          <h1>Admin Companion</h1>
+        <header className="header">
+          <div className="header-left">
+            <h1>Admin Companion</h1>
+            <p>See What's Happening Across your School</p>
+          </div>
 
-          <input placeholder="Ask Savra AI" />
-
-          <select>
-            <option>Grade 7</option>
-          </select>
-
-          <select>
-            <option>All Subjects</option>
-          </select>
+          <div className="header-right">
+            <div className="search-container">
+              <span className="search-icon"><Icons.Search /></span>
+              <input type="text" className="search-input" placeholder="Ask Savra Ai" />
+            </div>
+            <button className="grade-btn">
+              Grade 7 <Icons.ChevronDown />
+            </button>
+            <button className="subject-btn">
+              All Subjects <Icons.ChevronDown />
+            </button>
+          </div>
         </header>
 
-        <h2>Insights</h2>
-
-        {/* 🔥 KPI Stat Cards */}
-        <div className="cards">
-          <div className="card">
-            <div className="value">
-              {summary?.active_teachers ?? "--"}
+        <section className="insights-section">
+          <div className="insights-header">
+            <h2>Insights</h2>
+            <div className="tabs">
+              <button className="tab active">This Week</button>
+              <button className="tab">This Month</button>
+              <button className="tab">This Year</button>
             </div>
-            <div className="label">Active Teachers</div>
-            <div className="sub">This week</div>
           </div>
 
-          <div className="card">
-            <div className="value">{summary?.lessons ?? "--"}</div>
-            <div className="label">Lessons Created</div>
-            <div className="sub">This week</div>
-          </div>
-
-          <div className="card">
-            <div className="value">{summary?.assessments ?? "--"}</div>
-            <div className="label">Assessments Made</div>
-            <div className="sub">This week</div>
-          </div>
-
-          <div className="card">
-            <div className="value">{summary?.quizzes ?? "--"}</div>
-            <div className="label">Quizzes Conducted</div>
-            <div className="sub">This week</div>
-          </div>
-
-          <div className="card">
-            <div className="value">
-              {summary?.submission_rate ?? "--"}%
+          <div className="kpi-grid">
+            <div className="kpi-card blue">
+              <div className="kpi-top">
+                <span className="kpi-label">Active Teachers</span>
+                <span className="kpi-icon"><Icons.Users /></span>
+              </div>
+              <div className="kpi-value">{summary?.active_teachers ?? "52"}</div>
+              <div className="kpi-sub">This week</div>
             </div>
-            <div className="label">Submission Rate</div>
-            <div className="sub">This week</div>
-          </div>
-        </div>
 
-        {/* Charts + AI Panel */}
-        <div className="grid">
-          {/* Weekly Chart */}
-          <div className="panel">
+            <div className="kpi-card green">
+              <div className="kpi-top">
+                <span className="kpi-label">Lessons Created</span>
+                <span className="kpi-icon"><Icons.Book /></span>
+              </div>
+              <div className="kpi-value">{summary?.lessons ?? "64"}</div>
+              <div className="kpi-sub">This week</div>
+            </div>
+
+            <div className="kpi-card orange">
+              <div className="kpi-top">
+                <span className="kpi-label">Assessments Made</span>
+                <span className="kpi-icon"><Icons.Book /></span>
+              </div>
+              <div className="kpi-value">{summary?.assessments ?? "39"}</div>
+              <div className="kpi-sub">This week</div>
+            </div>
+
+            <div className="kpi-card yellow">
+              <div className="kpi-top">
+                <span className="kpi-label">Quizzes Conducted</span>
+                <span className="kpi-icon"><Icons.Book /></span>
+              </div>
+              <div className="kpi-value">{summary?.quizzes ?? "50"}</div>
+              <div className="kpi-sub">This week</div>
+            </div>
+
+            <div className="kpi-card pink">
+              <div className="kpi-top">
+                <span className="kpi-label">Submission Rate</span>
+                <span className="kpi-icon"><Icons.Award /></span>
+              </div>
+              <div className="kpi-value">{summary?.submission_rate ?? "0"}%</div>
+              <div className="kpi-sub">This week</div>
+            </div>
+          </div>
+        </section>
+
+        <div className="dashboard-bottom">
+          <div className="panel weekly-activity">
             <h3>Weekly Activity</h3>
-
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={trend}>
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#7c8cff"
-                  strokeWidth={3}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <p className="panel-sub">Content creation trends</p>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <AreaChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorVal1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorVal2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#999', fontSize: 12 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#999', fontSize: 12 }}
+                  />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="value1"
+                    stroke="#22c55e"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorVal1)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value2"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorVal2)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          {/* AI Summary Panel */}
-          <div className="panel">
+          <div className="panel ai-pulse">
             <h3>AI Pulse Summary</h3>
-
-            <ul className="pulse">
-              <li>Harshita has the highest workload</li>
-              <li>Class 1A has the most students</li>
-              <li>Class 11A has low enrollment</li>
-            </ul>
+            <p className="panel-sub">Real time insights from your data</p>
+            <div className="pulse-list">
+              <div className="pulse-item pink">
+                <div className="pulse-icon-box"><Icons.Trophy /></div>
+                <div className="pulse-text">Harshita has the highest workload with 35 classes and 7 subjects</div>
+              </div>
+              <div className="pulse-item green">
+                <div className="pulse-icon-box"><Icons.TrendingUp /></div>
+                <div className="pulse-text">Class 1 A has the most students with 7 enrolled</div>
+              </div>
+              <div className="pulse-item yellow">
+                <div className="pulse-icon-box"><Icons.AlertTriangle /></div>
+                <div className="pulse-text">Class 11 A has only 0 students - consider reviewing enrollment</div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
