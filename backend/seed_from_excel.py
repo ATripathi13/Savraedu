@@ -1,45 +1,49 @@
 import pandas as pd
+from pathlib import Path
 from backend.database import SessionLocal
-from backend.crud import create_activity
-from backend.schemas import ActivityCreate
+from backend.models import Activity
+import hashlib
 
-FILE_PATH = "activities.xlsx"
 
-db = SessionLocal()
+BASE_DIR = Path(__file__).resolve().parent
+FILE_PATH = BASE_DIR / "activities.xlsx"
 
-print("📥 Reading Excel file...")
-df = pd.read_excel(FILE_PATH)
 
-print("Columns found:", list(df.columns))
-print(f"✅ Loaded {len(df)} rows")
+def seed_from_excel():
+    db = SessionLocal()
 
-success = 0
-duplicates = 0
-errors = 0
+    if db.query(Activity).first():
+        print("✅ Data already exists — skipping seed")
+        db.close()
+        return
 
-for index, row in df.iterrows():
-    try:
-        activity = ActivityCreate(
-            teacher_id=str(row["Teacher_id"]),
-            teacher_name=str(row["Teacher_name"]),
-            activity_type=str(row["Activity_type"]).strip().lower(),
-            created_at=pd.to_datetime(row["Created_at"]),
-            subject=str(row["Subject"]),
-            grade=int(row["Grade"]),
+    print("📥 Reading Excel file...")
+
+    if not FILE_PATH.exists():
+        print("❌ Excel file not found")
+        db.close()
+        return
+
+    df = pd.read_excel(FILE_PATH)
+
+    for _, row in df.iterrows():
+        data = row.to_dict()
+
+        hash_key = hashlib.md5(str(data).encode()).hexdigest()
+
+        activity = Activity(
+            teacher_id=data["teacher_id"],
+            teacher_name=data["teacher_name"],
+            activity_type=data["activity_type"],
+            subject=data["subject"],
+            grade=data["grade"],
+            created_at=data["created_at"],
+            hash_key=hash_key,
         )
 
-        result = create_activity(db, activity)
+        db.add(activity)
 
-        if result:
-            success += 1
-        else:
-            duplicates += 1
+    db.commit()
+    db.close()
 
-    except Exception as e:
-        print(f"❌ Row {index} failed:", e)
-        errors += 1
-
-print("\n🎯 Import Summary")
-print("Inserted:", success)
-print("Duplicates skipped:", duplicates)
-print("Errors:", errors)
+    print("✅ Excel seed completed")
