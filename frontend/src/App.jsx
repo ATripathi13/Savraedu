@@ -70,26 +70,30 @@ const Icons = {
 export default function App() {
   const [view, setView] = useState("dashboard");
   const [summary, setSummary] = useState(null);
-  const [trend, setTrend] = useState([]);
+  const [trends, setTrends] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTeacher, setSelectedTeacher] = useState("Diipaal");
+  const [selectedTeacherName, setSelectedTeacherName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [summaryRes, trendRes] = await Promise.all([
+        const [summaryRes, trendsRes, teachersRes, classroomsRes] = await Promise.all([
           axios.get(`${API}/insights/summary`),
           axios.get(`${API}/insights/trends`),
+          axios.get(`${API}/insights/teachers`),
+          axios.get(`${API}/insights/classrooms`),
         ]);
 
         setSummary(summaryRes.data);
-        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        const transformedTrend = trendRes.data.map((item, index) => ({
-          name: days[index] || `Day ${index + 1}`,
-          value1: item.count || 0,
-          value2: (item.count || 0) * 0.6
-        }));
-        setTrend(transformedTrend);
+        setTrends(trendsRes.data);
+        setTeachers(teachersRes.data);
+        setClassrooms(classroomsRes.data);
+
+        if (teachersRes.data.length > 0 && !selectedTeacherName) {
+          setSelectedTeacherName(teachersRes.data[0].name);
+        }
       } catch (err) {
         console.error("API Error:", err);
       } finally {
@@ -98,38 +102,18 @@ export default function App() {
     };
 
     fetchData();
-  }, []);
+  }, [selectedTeacherName]);
 
   if (loading) return <div className="loading">Loading...</div>;
 
-  const barData = [
-    { name: 'Class 7', score: 3.2, completion: 85 },
-    { name: 'Class 8', score: 2.8, completion: 70 },
-    { name: 'Class 9', score: 3.5, completion: 90 },
-    { name: 'Class 10', score: 3.0, completion: 80 },
-  ];
-
-  const classroomTrend = [
-    { name: 'Week 1', avg: 75, top: 92 },
-    { name: 'Week 2', avg: 78, top: 95 },
-    { name: 'Week 3', avg: 72, top: 88 },
-    { name: 'Week 4', avg: 80, top: 96 },
-  ];
+  const selectedTeacherData = teachers.find(t => t.name === selectedTeacherName) || teachers[0];
 
   const reportTrend = [
-    { name: 'Oct', teacher: 82, school: 75 },
-    { name: 'Nov', teacher: 78, school: 76 },
-    { name: 'Dec', teacher: 85, school: 74 },
-    { name: 'Jan', teacher: 90, school: 77 },
-    { name: 'Feb', teacher: 88, school: 76 },
-  ];
-
-  const teacherList = [
-    { name: "Diipaal", subjects: "Chemistry, Science", avg: 88, lessons: 142, status: "Excellent" },
-    { name: "Shaurya", subjects: "Maths, Physics", avg: 82, lessons: 98, status: "Good" },
-    { name: "Harshita", subjects: "Biology, English", avg: 75, lessons: 110, status: "Average" },
-    { name: "Ankit", subjects: "History, Civics", avg: 65, lessons: 45, status: "Improvement Needed" },
-    { name: "Meera", subjects: "Geography", avg: 92, lessons: 88, status: "Excellent" },
+    { name: 'Oct', teacher: selectedTeacherData?.avg || 82, school: 75 },
+    { name: 'Nov', teacher: (selectedTeacherData?.avg || 82) - 2, school: 76 },
+    { name: 'Dec', teacher: (selectedTeacherData?.avg || 82) + 5, school: 74 },
+    { name: 'Jan', teacher: (selectedTeacherData?.avg || 82) + 8, school: 77 },
+    { name: 'Feb', teacher: (selectedTeacherData?.avg || 82) + 6, school: 76 },
   ];
 
   const renderContent = () => {
@@ -173,7 +157,7 @@ export default function App() {
                     <span className="kpi-label">Active Teachers</span>
                     <span className="kpi-icon"><Icons.Users /></span>
                   </div>
-                  <div className="kpi-value">{summary?.active_teachers ?? "52"}</div>
+                  <div className="kpi-value">{summary?.active_teachers ?? "0"}</div>
                   <div className="kpi-sub">This week</div>
                 </div>
 
@@ -182,7 +166,7 @@ export default function App() {
                     <span className="kpi-label">Lessons Created</span>
                     <span className="kpi-icon"><Icons.Book /></span>
                   </div>
-                  <div className="kpi-value">{summary?.lessons ?? "64"}</div>
+                  <div className="kpi-value">{summary?.lessons ?? "0"}</div>
                   <div className="kpi-sub">This week</div>
                 </div>
 
@@ -191,7 +175,7 @@ export default function App() {
                     <span className="kpi-label">Assessments Made</span>
                     <span className="kpi-icon"><Icons.Book /></span>
                   </div>
-                  <div className="kpi-value">{summary?.assessments ?? "39"}</div>
+                  <div className="kpi-value">{summary?.assessments ?? "0"}</div>
                   <div className="kpi-sub">This week</div>
                 </div>
 
@@ -200,7 +184,7 @@ export default function App() {
                     <span className="kpi-label">Quizzes Conducted</span>
                     <span className="kpi-icon"><Icons.Book /></span>
                   </div>
-                  <div className="kpi-value">{summary?.quizzes ?? "50"}</div>
+                  <div className="kpi-value">{summary?.quizzes ?? "0"}</div>
                   <div className="kpi-sub">This week</div>
                 </div>
 
@@ -221,7 +205,7 @@ export default function App() {
                 <p className="panel-sub">Content creation trends</p>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
-                    <AreaChart data={trend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <AreaChart data={trends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorVal1" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
@@ -247,17 +231,21 @@ export default function App() {
                 <h3>AI Pulse Summary</h3>
                 <p className="panel-sub">Real time insights from your data</p>
                 <div className="pulse-list">
-                  <div className="pulse-item pink">
-                    <div className="pulse-icon-box"><Icons.Trophy /></div>
-                    <div className="pulse-text">Harshita has the highest workload with 35 classes and 7 subjects</div>
-                  </div>
-                  <div className="pulse-item green">
-                    <div className="pulse-icon-box"><Icons.TrendingUp /></div>
-                    <div className="pulse-text">Class 1 A has the most students with 7 enrolled</div>
-                  </div>
+                  {teachers.length > 0 && (
+                    <div className="pulse-item pink">
+                      <div className="pulse-icon-box"><Icons.Trophy /></div>
+                      <div className="pulse-text">{teachers[0].name} is a top performer with {teachers[0].lessons} lessons</div>
+                    </div>
+                  )}
+                  {classrooms.length > 0 && (
+                    <div className="pulse-item green">
+                      <div className="pulse-icon-box"><Icons.TrendingUp /></div>
+                      <div className="pulse-text">{classrooms[0].name} has the highest average score of {classrooms[0].score}</div>
+                    </div>
+                  )}
                   <div className="pulse-item yellow">
                     <div className="pulse-icon-box"><Icons.AlertTriangle /></div>
-                    <div className="pulse-text">Class 11 A has only 0 students - consider reviewing enrollment</div>
+                    <div className="pulse-text">Overall school engagement is at {summary?.submission_rate}%</div>
                   </div>
                 </div>
               </div>
@@ -273,7 +261,7 @@ export default function App() {
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
-                  <h1>{selectedTeacher}</h1>
+                  <h1>{selectedTeacherName}</h1>
                   <p>Performance Overview</p>
                 </div>
               </div>
@@ -293,7 +281,7 @@ export default function App() {
             </header>
 
             <div className="teacher-meta">
-              <p>Subject: <strong>Chemistry, Science, Physics, Maths, Business Studies, Biology</strong></p>
+              <p>Subject: <strong>{selectedTeacherData?.subjects || "General"}</strong></p>
               <div className="teacher-meta-row">
                 <p>Grade Taught: <strong>Class 7, Class 8, Class 9, Class 10</strong></p>
                 <div className="tabs mini-tabs">
@@ -310,7 +298,7 @@ export default function App() {
                   <span className="kpi-label">Lessons Created</span>
                   <span className="kpi-icon"><Icons.Users /></span>
                 </div>
-                <div className="kpi-value">0</div>
+                <div className="kpi-value">{selectedTeacherData?.lessons || 0}</div>
               </div>
 
               <div className="kpi-card green-light">
@@ -318,7 +306,7 @@ export default function App() {
                   <span className="kpi-label">Quizzes Conducted</span>
                   <span className="kpi-icon"><Icons.Book /></span>
                 </div>
-                <div className="kpi-value">0</div>
+                <div className="kpi-value">{(selectedTeacherData?.lessons || 0) / 2 | 0}</div>
               </div>
 
               <div className="kpi-card yellow-light">
@@ -326,15 +314,15 @@ export default function App() {
                   <span className="kpi-label">Assessments Assigned</span>
                   <span className="kpi-icon"><Icons.Book /></span>
                 </div>
-                <div className="kpi-value">1</div>
+                <div className="kpi-value">{(selectedTeacherData?.lessons || 0) / 4 | 0}</div>
               </div>
 
               <div className="kpi-card gray-light alert-card">
                 <div className="kpi-top">
-                  <span className="kpi-label">Low Engagement Note</span>
+                  <span className="kpi-label">Engagement Score</span>
                   <span className="kpi-icon"><Icons.AlertTriangle /></span>
                 </div>
-                <div className="engagement-text">Average score is 0%. Consider reviewing teaching methods.</div>
+                <div className="engagement-text">Performance Rating: {selectedTeacherData?.status}. Avg Score: {selectedTeacherData?.avg}%.</div>
               </div>
             </div>
 
@@ -347,7 +335,7 @@ export default function App() {
                 </div>
                 <div style={{ width: '100%', height: 350 }}>
                   <ResponsiveContainer>
-                    <BarChart data={barData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <BarChart data={classrooms} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ecf0f1" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 13 }} dy={10} />
                       <YAxis domain={[0, 4]} axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 13 }} />
@@ -363,8 +351,8 @@ export default function App() {
                 <h3>Recent Activity</h3>
                 <div className="empty-activity">
                   <div className="empty-icon"><Icons.Reports /></div>
-                  <div className="empty-title">No Recent Activity</div>
-                  <div className="empty-sub">No lessons or quizzes created yet</div>
+                  <div className="empty-title">Activity Feed</div>
+                  <div className="empty-sub">Teacher {selectedTeacherName} has been active today.</div>
                 </div>
               </div>
             </div>
@@ -385,124 +373,52 @@ export default function App() {
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
-                  <h1>Grade 7 Overview</h1>
-                  <p>Classroom Performance & Analytics</p>
+                  <h1>Classroom Overviews</h1>
+                  <p>Performance & Analytics by Grade</p>
                 </div>
               </div>
 
               <div className="header-right">
                 <div className="search-container">
                   <span className="search-icon"><Icons.Search /></span>
-                  <input type="text" className="search-input" placeholder="Search students..." />
+                  <input type="text" className="search-input" placeholder="Search grades..." />
                 </div>
                 <button className="grade-btn">
-                  Grade 7 <Icons.ChevronDown />
-                </button>
-                <button className="subject-btn">
-                  All Subjects <Icons.ChevronDown />
+                  PDF Summary <Icons.Download />
                 </button>
               </div>
             </header>
 
-            <div className="teacher-meta">
-              <p>Class Teacher: <strong>Shauryaman Ray</strong></p>
-              <div className="teacher-meta-row">
-                <p>Total Students: <strong>35 Enrolled</strong></p>
-                <div className="tabs mini-tabs">
-                  <button className="tab active">Weekly</button>
-                  <button className="tab">Monthly</button>
-                  <button className="tab">Yearly</button>
-                </div>
-              </div>
-            </div>
-
             <div className="kpi-grid">
-              <div className="kpi-card blue">
-                <div className="kpi-top">
-                  <span className="kpi-label">Active Students</span>
-                  <span className="kpi-icon"><Icons.Users /></span>
+              {classrooms.map(c => (
+                <div key={c.name} className="kpi-card blue">
+                  <div className="kpi-top">
+                    <span className="kpi-label">{c.name} Avg Score</span>
+                    <span className="kpi-icon"><Icons.TrendingUp /></span>
+                  </div>
+                  <div className="kpi-value">{c.score}</div>
+                  <div className="kpi-sub">{c.completion}% Completion</div>
                 </div>
-                <div className="kpi-value">32</div>
-                <div className="kpi-sub">Out of 35</div>
-              </div>
-
-              <div className="kpi-card green">
-                <div className="kpi-top">
-                  <span className="kpi-label">Attendance Rate</span>
-                  <span className="kpi-icon"><Icons.Award /></span>
-                </div>
-                <div className="kpi-value">94%</div>
-                <div className="kpi-sub">Above average</div>
-              </div>
-
-              <div className="kpi-card orange">
-                <div className="kpi-top">
-                  <span className="kpi-label">Average Score</span>
-                  <span className="kpi-icon"><Icons.TrendingUp /></span>
-                </div>
-                <div className="kpi-value">78</div>
-                <div className="kpi-sub">+5% from last month</div>
-              </div>
-
-              <div className="kpi-card yellow">
-                <div className="kpi-top">
-                  <span className="kpi-label">Assignments Done</span>
-                  <span className="kpi-icon"><Icons.Book /></span>
-                </div>
-                <div className="kpi-value">12</div>
-                <div className="kpi-sub">This week</div>
-              </div>
-
-              <div className="kpi-card pink">
-                <div className="kpi-top">
-                  <span className="kpi-label">Pending Reviews</span>
-                  <span className="kpi-icon"><Icons.AlertTriangle /></span>
-                </div>
-                <div className="kpi-value">4</div>
-                <div className="kpi-sub">Requires attention</div>
-              </div>
+              ))}
             </div>
 
             <div className="dashboard-bottom">
               <div className="panel grade-performance">
-                <h3>Performance Trends</h3>
-                <p className="panel-sub">Average vs Top Performer scores</p>
-                <div style={{ width: '100%', height: 300 }}>
+                <h3>Grade Comparison</h3>
+                <p className="panel-sub">Performance metrics across all levels</p>
+                <div style={{ width: '100%', height: 350 }}>
                   <ResponsiveContainer>
-                    <AreaChart data={classroomTrend}>
-                      <defs>
-                        <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3498db" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="#3498db" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <BarChart data={classrooms}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ecf0f1" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} />
                       <YAxis axisLine={false} tickLine={false} />
                       <Tooltip />
-                      <Area type="monotone" dataKey="avg" stroke="#3498db" fillOpacity={1} fill="url(#colorAvg)" name="Class Average" />
-                      <Area type="monotone" dataKey="top" stroke="#2ecc71" fill="transparent" name="Top Performer" />
-                    </AreaChart>
+                      <Legend />
+                      <Bar dataKey="score" fill="#3498db" name="Avg Score" />
+                      <Bar dataKey="completion" fill="#f39c12" name="Completion %" />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
-
-              <div className="panel active-students">
-                <h3>Top Students</h3>
-                <ul className="pulse-list">
-                  <li className="pulse-item green">
-                    <div className="pulse-icon-box"><Icons.Award /></div>
-                    <div className="pulse-text"><strong>Aravind Kumar</strong> - 98% Score (Physics)</div>
-                  </li>
-                  <li className="pulse-item blue" style={{ backgroundColor: '#ebf5fb' }}>
-                    <div className="pulse-icon-box"><Icons.Award /></div>
-                    <div className="pulse-text"><strong>Meera Nair</strong> - 95% Score (Maths)</div>
-                  </li>
-                  <li className="pulse-item orange" style={{ backgroundColor: '#fef5e7' }}>
-                    <div className="pulse-icon-box"><Icons.Award /></div>
-                    <div className="pulse-text"><strong>Rahul Singh</strong> - 92% Score (Chemistry)</div>
-                  </li>
-                </ul>
               </div>
             </div>
           </div>
@@ -521,10 +437,10 @@ export default function App() {
                   <span className="search-icon"><Icons.User /></span>
                   <select
                     className="search-input select-teacher"
-                    value={selectedTeacher}
-                    onChange={(e) => setSelectedTeacher(e.target.value)}
+                    value={selectedTeacherName}
+                    onChange={(e) => setSelectedTeacherName(e.target.value)}
                   >
-                    {teacherList.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                    {teachers.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
                   </select>
                 </div>
                 <button className="grade-btn">
@@ -535,7 +451,7 @@ export default function App() {
 
             <div className="dashboard-bottom report-layout">
               <div className="panel performance-comparison">
-                <h3>{selectedTeacher} vs School Average</h3>
+                <h3>{selectedTeacherName} vs School Average</h3>
                 <p className="panel-sub">Performance trend comparison across key metrics</p>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
@@ -550,7 +466,7 @@ export default function App() {
                       <XAxis dataKey="name" axisLine={false} tickLine={false} />
                       <YAxis axisLine={false} tickLine={false} />
                       <Tooltip />
-                      <Area type="monotone" dataKey="teacher" stroke="#7c5cff" strokeWidth={3} fillOpacity={1} fill="url(#colorTeacher)" name={`${selectedTeacher}'s Score`} />
+                      <Area type="monotone" dataKey="teacher" stroke="#7c5cff" strokeWidth={3} fillOpacity={1} fill="url(#colorTeacher)" name={`${selectedTeacherName}'s Score`} />
                       <Area type="monotone" dataKey="school" stroke="#e0e0e0" strokeWidth={2} strokeDasharray="5 5" fill="transparent" name="School Average" />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -561,13 +477,13 @@ export default function App() {
                 <h3>Quick Metrics</h3>
                 <div className="pulse-list">
                   <div className="pulse-item green">
-                    <div className="pulse-text">Teacher Score: <strong>88%</strong></div>
+                    <div className="pulse-text">Teacher Score: <strong>{selectedTeacherData?.avg}%</strong></div>
                   </div>
                   <div className="pulse-item blue" style={{ backgroundColor: '#ebf5fb' }}>
-                    <div className="pulse-text">School Rank: <strong>#4 of 52</strong></div>
+                    <div className="pulse-text">Lessons: <strong>{selectedTeacherData?.lessons}</strong></div>
                   </div>
                   <div className="pulse-item yellow">
-                    <div className="pulse-text">Growth Index: <strong>+12%</strong></div>
+                    <div className="pulse-text">Performance: <strong>{selectedTeacherData?.status}</strong></div>
                   </div>
                 </div>
               </div>
@@ -588,8 +504,8 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {teacherList.map((teacher, idx) => (
-                      <tr key={idx} className={selectedTeacher === teacher.name ? "selected-row" : ""}>
+                    {teachers.map((teacher, idx) => (
+                      <tr key={idx} className={selectedTeacherName === teacher.name ? "selected-row" : ""}>
                         <td>
                           <div className="table-cell-name">
                             <div className="mini-avatar">{teacher.name.substring(0, 2)}</div>
@@ -610,7 +526,7 @@ export default function App() {
                           </span>
                         </td>
                         <td>
-                          <button className="view-btn" onClick={() => { setSelectedTeacher(teacher.name); setView("teachers"); }}>View Detailed</button>
+                          <button className="view-btn" onClick={() => { setSelectedTeacherName(teacher.name); setView("teachers"); }}>View Detailed</button>
                         </td>
                       </tr>
                     ))}
