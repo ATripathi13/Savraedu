@@ -1,9 +1,7 @@
 from fastapi import FastAPI, Depends, Query
 from sqlalchemy.orm import Session
 from backend.database import Base, engine, SessionLocal
-from backend import schemas
-from backend import crud
-from backend import insights
+from backend import schemas,crud,insights
 from backend.models import Activity
 from sqlalchemy import func
 from typing import Optional
