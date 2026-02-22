@@ -74,16 +74,29 @@ export default function App() {
   const [teachers, setTeachers] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Refined States for Search & Dropdowns
   const [selectedTeacherName, setSelectedTeacherName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGrade, setSelectedGrade] = useState("All Grades");
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const params = {};
+        if (selectedGrade !== "All Grades") {
+          params.grade = selectedGrade.split(" ")[1];
+        }
+        if (selectedSubject !== "All Subjects") {
+          params.subject = selectedSubject;
+        }
+
         const [summaryRes, trendsRes, teachersRes, classroomsRes] = await Promise.all([
-          axios.get(`${API}/insights/summary`),
-          axios.get(`${API}/insights/trends`),
-          axios.get(`${API}/insights/teachers`),
-          axios.get(`${API}/insights/classrooms`),
+          axios.get(`${API}/insights/summary`, { params }),
+          axios.get(`${API}/insights/trends`, { params }),
+          axios.get(`${API}/insights/teachers`, { params }),
+          axios.get(`${API}/insights/classrooms`, { params }),
         ]);
 
         setSummary(summaryRes.data);
@@ -102,9 +115,19 @@ export default function App() {
     };
 
     fetchData();
-  }, [selectedTeacherName]);
+  }, [selectedGrade, selectedSubject, selectedTeacherName]);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  const grades = ["All Grades", "Grade 7", "Grade 8", "Grade 9", "Grade 10"];
+  const subjects = ["All Subjects", "Maths", "Science", "Physics", "Chemistry", "Biology", "English"];
+
+  const filteredTeachers = teachers.filter(t =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.subjects.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredClassrooms = classrooms.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const selectedTeacherData = teachers.find(t => t.name === selectedTeacherName) || teachers[0];
 
@@ -116,6 +139,37 @@ export default function App() {
     { name: 'Feb', teacher: (selectedTeacherData?.avg || 82) + 6, school: 76 },
   ];
 
+  if (loading) return <div className="loading">Loading...</div>;
+
+  const renderHeaderRight = (placeholder) => (
+    <div className="header-right">
+      <div className="search-container">
+        <span className="search-icon"><Icons.Search /></span>
+        <input
+          type="text"
+          className="search-input"
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      <select
+        className="grade-btn select-styled"
+        value={selectedGrade}
+        onChange={(e) => setSelectedGrade(e.target.value)}
+      >
+        {grades.map(g => <option key={g} value={g}>{g}</option>)}
+      </select>
+      <select
+        className="subject-btn select-styled"
+        value={selectedSubject}
+        onChange={(e) => setSelectedSubject(e.target.value)}
+      >
+        {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
+    </div>
+  );
+
   const renderContent = () => {
     switch (view) {
       case "dashboard":
@@ -126,19 +180,7 @@ export default function App() {
                 <h1>Admin Companion</h1>
                 <p>See What's Happening Across your School</p>
               </div>
-
-              <div className="header-right">
-                <div className="search-container">
-                  <span className="search-icon"><Icons.Search /></span>
-                  <input type="text" className="search-input" placeholder="Ask Savra Ai" />
-                </div>
-                <button className="grade-btn">
-                  Grade 7 <Icons.ChevronDown />
-                </button>
-                <button className="subject-btn">
-                  All Subjects <Icons.ChevronDown />
-                </button>
-              </div>
+              {renderHeaderRight("Ask Savra Ai")}
             </header>
 
             <section className="insights-section">
@@ -257,7 +299,7 @@ export default function App() {
           <div className="teachers-view">
             <header className="header">
               <div className="header-left-row">
-                <button className="back-btn" onClick={() => setView("dashboard")}>
+                <button className="back-btn" onClick={() => { setView("dashboard"); setSearchQuery(""); }}>
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
@@ -265,19 +307,7 @@ export default function App() {
                   <p>Performance Overview</p>
                 </div>
               </div>
-
-              <div className="header-right">
-                <div className="search-container">
-                  <span className="search-icon"><Icons.Search /></span>
-                  <input type="text" className="search-input" placeholder="Search teachers..." />
-                </div>
-                <button className="grade-btn">
-                  Grade 7 <Icons.ChevronDown />
-                </button>
-                <button className="subject-btn">
-                  All Subjects <Icons.ChevronDown />
-                </button>
-              </div>
+              {renderHeaderRight("Search teachers...")}
             </header>
 
             <div className="teacher-meta">
@@ -348,11 +378,15 @@ export default function App() {
               </div>
 
               <div className="panel recent-activity">
-                <h3>Recent Activity</h3>
-                <div className="empty-activity">
-                  <div className="empty-icon"><Icons.Reports /></div>
-                  <div className="empty-title">Activity Feed</div>
-                  <div className="empty-sub">Teacher {selectedTeacherName} has been active today.</div>
+                <h3>Filtered Results</h3>
+                <div className="pulse-list">
+                  {filteredTeachers.slice(0, 3).map((t, i) => (
+                    <div key={i} className="pulse-item pink" style={{ cursor: 'pointer' }} onClick={() => setSelectedTeacherName(t.name)}>
+                      <div className="pulse-icon-box"><Icons.User /></div>
+                      <div className="pulse-text">{t.name} - {t.subjects}</div>
+                    </div>
+                  ))}
+                  {filteredTeachers.length === 0 && <div className="empty-sub">No teachers found for "{searchQuery}"</div>}
                 </div>
               </div>
             </div>
@@ -369,7 +403,7 @@ export default function App() {
           <div className="classrooms-view">
             <header className="header">
               <div className="header-left-row">
-                <button className="back-btn" onClick={() => setView("dashboard")}>
+                <button className="back-btn" onClick={() => { setView("dashboard"); setSearchQuery(""); }}>
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
@@ -377,20 +411,11 @@ export default function App() {
                   <p>Performance & Analytics by Grade</p>
                 </div>
               </div>
-
-              <div className="header-right">
-                <div className="search-container">
-                  <span className="search-icon"><Icons.Search /></span>
-                  <input type="text" className="search-input" placeholder="Search grades..." />
-                </div>
-                <button className="grade-btn">
-                  PDF Summary <Icons.Download />
-                </button>
-              </div>
+              {renderHeaderRight("Search grades...")}
             </header>
 
             <div className="kpi-grid">
-              {classrooms.map(c => (
+              {filteredClassrooms.map(c => (
                 <div key={c.name} className="kpi-card blue">
                   <div className="kpi-top">
                     <span className="kpi-label">{c.name} Avg Score</span>
@@ -400,6 +425,7 @@ export default function App() {
                   <div className="kpi-sub">{c.completion}% Completion</div>
                 </div>
               ))}
+              {filteredClassrooms.length === 0 && <div className="empty-sub">No grades found for "{searchQuery}"</div>}
             </div>
 
             <div className="dashboard-bottom">
@@ -408,7 +434,7 @@ export default function App() {
                 <p className="panel-sub">Performance metrics across all levels</p>
                 <div style={{ width: '100%', height: 350 }}>
                   <ResponsiveContainer>
-                    <BarChart data={classrooms}>
+                    <BarChart data={filteredClassrooms}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ecf0f1" />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} />
                       <YAxis axisLine={false} tickLine={false} />
@@ -428,30 +454,24 @@ export default function App() {
           <div className="reports-view">
             <header className="header">
               <div className="header-left">
-                <h1>Teacher Performance Reports</h1>
+                <h1>Reports Dashboard</h1>
                 <p>Detailed performance analytics and comparisons</p>
               </div>
+              {renderHeaderRight("Search data...")}
+            </header>
 
-              <div className="header-right">
-                <div className="search-container teacher-search">
-                  <span className="search-icon"><Icons.User /></span>
+            <div className="dashboard-bottom report-layout">
+              <div className="panel performance-comparison">
+                <div className="panel-header-row">
+                  <h3>{selectedTeacherName} vs School Average</h3>
                   <select
-                    className="search-input select-teacher"
+                    className="select-teacher select-styled mini"
                     value={selectedTeacherName}
                     onChange={(e) => setSelectedTeacherName(e.target.value)}
                   >
                     {teachers.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
                   </select>
                 </div>
-                <button className="grade-btn">
-                  Export PDF <Icons.Download />
-                </button>
-              </div>
-            </header>
-
-            <div className="dashboard-bottom report-layout">
-              <div className="panel performance-comparison">
-                <h3>{selectedTeacherName} vs School Average</h3>
                 <p className="panel-sub">Performance trend comparison across key metrics</p>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
@@ -490,7 +510,7 @@ export default function App() {
             </div>
 
             <div className="panel teacher-table-panel">
-              <h3>All Teachers Performance Overview</h3>
+              <h3>Teacher Performance Overview</h3>
               <div className="table-container">
                 <table className="teacher-table">
                   <thead>
@@ -504,7 +524,7 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {teachers.map((teacher, idx) => (
+                    {filteredTeachers.map((teacher, idx) => (
                       <tr key={idx} className={selectedTeacherName === teacher.name ? "selected-row" : ""}>
                         <td>
                           <div className="table-cell-name">
@@ -526,12 +546,13 @@ export default function App() {
                           </span>
                         </td>
                         <td>
-                          <button className="view-btn" onClick={() => { setSelectedTeacherName(teacher.name); setView("teachers"); }}>View Detailed</button>
+                          <button className="view-btn" onClick={() => { setSelectedTeacherName(teacher.name); setView("teachers"); setSearchQuery(""); }}>View Detailed</button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                {filteredTeachers.length === 0 && <div className="empty-state-padding">No results found for "{searchQuery}"</div>}
               </div>
             </div>
 
@@ -559,19 +580,19 @@ export default function App() {
           <div className="sidebar-menu">
             <div className="sidebar-label">Main</div>
             <nav className="nav-links">
-              <a href="#" className={`nav-item ${view === "dashboard" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("dashboard"); }}>
+              <a href="#" className={`nav-item ${view === "dashboard" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("dashboard"); setSearchQuery(""); }}>
                 <span className="nav-icon"><Icons.Dashboard /></span>
                 Dashboard
               </a>
-              <a href="#" className={`nav-item ${view === "teachers" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("teachers"); }}>
+              <a href="#" className={`nav-item ${view === "teachers" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("teachers"); setSearchQuery(""); }}>
                 <span className="nav-icon"><Icons.Teachers /></span>
                 Teachers
               </a>
-              <a href="#" className={`nav-item ${view === "classrooms" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("classrooms"); }}>
+              <a href="#" className={`nav-item ${view === "classrooms" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("classrooms"); setSearchQuery(""); }}>
                 <span className="nav-icon"><Icons.Classrooms /></span>
                 Classrooms
               </a>
-              <a href="#" className={`nav-item ${view === "reports" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("reports"); }}>
+              <a href="#" className={`nav-item ${view === "reports" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("reports"); setSearchQuery(""); }}>
                 <span className="nav-icon"><Icons.Reports /></span>
                 Reports
               </a>

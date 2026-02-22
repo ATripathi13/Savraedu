@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Query
 from sqlalchemy.orm import Session
 from database import Base, engine, SessionLocal
 import schemas 
@@ -6,6 +6,7 @@ import crud
 import insights
 from models import Activity
 from sqlalchemy import func
+from typing import Optional
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,11 +30,21 @@ def get_db():
         db.close()
 
 @app.get("/insights/summary")
-def get_summary(db: Session = Depends(get_db)):
-    lessons = db.query(Activity).filter(Activity.activity_type=="lesson").count()
-    quizzes = db.query(Activity).filter(Activity.activity_type=="quiz").count()
-    assessments = db.query(Activity).filter(Activity.activity_type=="assessment").count()
-    teachers = db.query(Activity.teacher_id).distinct().count()
+def get_summary(
+    grade: Optional[int] = Query(None),
+    subject: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Activity)
+    if grade:
+        query = query.filter(Activity.grade == grade)
+    if subject:
+        query = query.filter(Activity.subject == subject)
+
+    lessons = query.filter(Activity.activity_type=="lesson").count()
+    quizzes = query.filter(Activity.activity_type=="quiz").count()
+    assessments = query.filter(Activity.activity_type=="assessment").count()
+    teachers = query.distinct(Activity.teacher_id).count()
 
     return {
         "active_teachers": teachers,
@@ -44,16 +55,28 @@ def get_summary(db: Session = Depends(get_db)):
     }
 
 @app.get("/insights/trends")
-def get_trends(db: Session = Depends(get_db)):
-    return insights.school_weekly_trends(db)
+def get_trends(
+    grade: Optional[int] = Query(None),
+    subject: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return insights.school_weekly_trends(db, grade=grade, subject=subject)
 
 @app.get("/insights/teachers")
-def get_teachers(db: Session = Depends(get_db)):
-    return insights.teacher_performance(db)
+def get_teachers(
+    grade: Optional[int] = Query(None),
+    subject: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return insights.teacher_performance(db, grade=grade, subject=subject)
 
 @app.get("/insights/classrooms")
-def get_classrooms(db: Session = Depends(get_db)):
-    # Mock data for classrooms for now as it's not and Activity schema property directly
+def get_classrooms(
+    grade: Optional[int] = Query(None),
+    subject: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    # Mock data for classrooms
     return [
         {"name": "Class 7", "score": 3.2, "completion": 85},
         {"name": "Class 8", "score": 2.8, "completion": 70},

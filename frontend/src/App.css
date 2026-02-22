@@ -61,7 +61,7 @@ body {
 }
 
 .logo-container {
-  padding-left:5px;
+  padding-left: 5px;
 }
 
 .logo-img {
@@ -606,12 +606,50 @@ body {
   width: 250px !important;
 }
 
-.select-teacher {
+.select-teacher,
+.select-styled {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   cursor: pointer;
+  padding-right: 32px !important;
+}
+
+.select-styled {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 32px 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  background-color: white;
+  transition: all 0.2s;
+  height: 40px;
+}
+
+.select-styled:hover {
+  border-color: var(--primary);
+}
+
+.select-styled.mini {
+  height: 32px;
+  font-size: 12px;
+  padding: 4px 28px 4px 10px;
+}
+
+.panel-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.empty-state-padding {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* Summary Metrics in Reports */

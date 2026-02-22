@@ -3,19 +3,24 @@ from models import Activity
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-def school_weekly_trends(db: Session):
+def school_weekly_trends(db: Session, grade: int = None, subject: str = None):
     # Get last 7 days distribution
     end_date = datetime.now()
     start_date = end_date - timedelta(days=6)
     
-    activities = db.query(Activity).all()
+    query = db.query(Activity)
+    if grade:
+        query = query.filter(Activity.grade == grade)
+    if subject:
+        query = query.filter(Activity.subject == subject)
+    
+    activities = query.all()
     
     # Simple day-wise grouping for the trend chart
     days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     data = defaultdict(lambda: {"count": 0})
     
     for a in activities:
-        # For simplicity, since the database might have old data, we'll map to week days
         day_name = a.created_at.strftime("%a")
         data[day_name]["count"] += 1
         
@@ -28,14 +33,21 @@ def school_weekly_trends(db: Session):
         })
     return result
 
-def teacher_performance(db: Session):
+def teacher_performance(db: Session, grade: int = None, subject: str = None):
+    query = db.query(Activity)
+    if grade:
+        query = query.filter(Activity.grade == grade)
+    if subject:
+        query = query.filter(Activity.subject == subject)
+        
+    activities = query.all()
+    
     data = defaultdict(lambda: {"lessons": 0, "quizzes": 0, "assessments": 0, "name": "", "subjects": set()})
 
-    for a in db.query(Activity).all():
+    for a in activities:
         d = data[a.teacher_id]
         d["name"] = a.teacher_name
-        # Assuming subjects can be inferred or fixed for now
-        d["subjects"].add("Science") # Placeholder
+        d["subjects"].add(a.subject)
         
         if a.activity_type == "lesson":
             d["lessons"] += 1
