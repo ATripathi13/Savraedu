@@ -5,6 +5,7 @@ from backend import schemas,crud,insights
 from backend.models import Activity
 from sqlalchemy import func
 from typing import Optional
+from backend import seed_from_excel
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -19,6 +20,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def startup_event():
+    Base.metadata.create_all(bind=engine)
+    seed_from_excel()
 
 def get_db():
     db = SessionLocal()
