@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from backend.database import Base, engine, SessionLocal
 from backend import schemas
 from backend import crud
-import insights
+from backend import insights
 from backend.models import Activity
 from sqlalchemy import func
 from typing import Optional
