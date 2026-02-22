@@ -57,7 +57,7 @@ const Icons = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
   ),
   ChevronLeft: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
   ),
   Download: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -99,56 +99,23 @@ export default function App() {
   if (loading) return <div className="loading">Loading...</div>;
 
   const barData = [
-    { name: 'Class 7', score: 0, completion: 0 },
-    { name: 'Class 8', score: 0, completion: 0 },
-    { name: 'Class 9', score: 0, completion: 0 },
-    { name: 'Class 10', score: 0, completion: 0 },
+    { name: 'Class 7', score: 3.2, completion: 85 },
+    { name: 'Class 8', score: 2.8, completion: 70 },
+    { name: 'Class 9', score: 3.5, completion: 90 },
+    { name: 'Class 10', score: 3.0, completion: 80 },
   ];
 
-  return (
-    <div className="layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-top">
-          <div className="logo-container">
-            <img src={logo} alt="Savra Logo" className="logo-img" />
-          </div>
+  const classroomTrend = [
+    { name: 'Week 1', avg: 75, top: 92 },
+    { name: 'Week 2', avg: 78, top: 95 },
+    { name: 'Week 3', avg: 72, top: 88 },
+    { name: 'Week 4', avg: 80, top: 96 },
+  ];
 
-          <div className="sidebar-menu">
-            <div className="sidebar-label">Main</div>
-            <nav className="nav-links">
-              <a href="#" className={`nav-item ${view === "dashboard" ? "active" : ""}`} onClick={() => setView("dashboard")}>
-                <span className="nav-icon"><Icons.Dashboard /></span>
-                Dashboard
-              </a>
-              <a href="#" className={`nav-item ${view === "teachers" ? "active" : ""}`} onClick={() => setView("teachers")}>
-                <span className="nav-icon"><Icons.Teachers /></span>
-                Teachers
-              </a>
-              <a href="#" className="nav-item">
-                <span className="nav-icon"><Icons.Classrooms /></span>
-                Classrooms
-              </a>
-              <a href="#" className="nav-item">
-                <span className="nav-icon"><Icons.Reports /></span>
-                Reports
-              </a>
-            </nav>
-          </div>
-        </div>
-
-        <div className="admin-profile">
-          <div className="avatar">SR</div>
-          <div className="admin-info">
-            <span className="admin-role">School Admin</span>
-            <span className="admin-name">Shauryaman Ray</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="content">
-        {view === "dashboard" ? (
+  const renderContent = () => {
+    switch (view) {
+      case "dashboard":
+        return (
           <>
             <header className="header">
               <div className="header-left">
@@ -276,7 +243,9 @@ export default function App() {
               </div>
             </div>
           </>
-        ) : (
+        );
+      case "teachers":
+        return (
           <div className="teachers-view">
             <header className="header">
               <div className="header-left-row">
@@ -386,7 +355,187 @@ export default function App() {
               </button>
             </div>
           </div>
-        )}
+        );
+      case "classrooms":
+        return (
+          <div className="classrooms-view">
+            <header className="header">
+              <div className="header-left-row">
+                <button className="back-btn" onClick={() => setView("dashboard")}>
+                  <Icons.ChevronLeft />
+                </button>
+                <div className="teacher-profile-info">
+                  <h1>Grade 7 Overview</h1>
+                  <p>Classroom Performance & Analytics</p>
+                </div>
+              </div>
+
+              <div className="header-right">
+                <div className="search-container">
+                  <span className="search-icon"><Icons.Search /></span>
+                  <input type="text" className="search-input" placeholder="Search students..." />
+                </div>
+                <button className="grade-btn">
+                  Grade 7 <Icons.ChevronDown />
+                </button>
+                <button className="subject-btn">
+                  All Subjects <Icons.ChevronDown />
+                </button>
+              </div>
+            </header>
+
+            <div className="teacher-meta">
+              <p>Class Teacher: <strong>Shauryaman Ray</strong></p>
+              <div className="teacher-meta-row">
+                <p>Total Students: <strong>35 Enrolled</strong></p>
+                <div className="tabs mini-tabs">
+                  <button className="tab active">Weekly</button>
+                  <button className="tab">Monthly</button>
+                  <button className="tab">Yearly</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="kpi-grid">
+              <div className="kpi-card blue">
+                <div className="kpi-top">
+                  <span className="kpi-label">Active Students</span>
+                  <span className="kpi-icon"><Icons.Users /></span>
+                </div>
+                <div className="kpi-value">32</div>
+                <div className="kpi-sub">Out of 35</div>
+              </div>
+
+              <div className="kpi-card green">
+                <div className="kpi-top">
+                  <span className="kpi-label">Attendance Rate</span>
+                  <span className="kpi-icon"><Icons.Award /></span>
+                </div>
+                <div className="kpi-value">94%</div>
+                <div className="kpi-sub">Above average</div>
+              </div>
+
+              <div className="kpi-card orange">
+                <div className="kpi-top">
+                  <span className="kpi-label">Average Score</span>
+                  <span className="kpi-icon"><Icons.TrendingUp /></span>
+                </div>
+                <div className="kpi-value">78</div>
+                <div className="kpi-sub">+5% from last month</div>
+              </div>
+
+              <div className="kpi-card yellow">
+                <div className="kpi-top">
+                  <span className="kpi-label">Assignments Done</span>
+                  <span className="kpi-icon"><Icons.Book /></span>
+                </div>
+                <div className="kpi-value">12</div>
+                <div className="kpi-sub">This week</div>
+              </div>
+
+              <div className="kpi-card pink">
+                <div className="kpi-top">
+                  <span className="kpi-label">Pending Reviews</span>
+                  <span className="kpi-icon"><Icons.AlertTriangle /></span>
+                </div>
+                <div className="kpi-value">4</div>
+                <div className="kpi-sub">Requires attention</div>
+              </div>
+            </div>
+
+            <div className="dashboard-bottom">
+              <div className="panel grade-performance">
+                <h3>Performance Trends</h3>
+                <p className="panel-sub">Average vs Top Performer scores</p>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <AreaChart data={classroomTrend}>
+                      <defs>
+                        <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3498db" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#3498db" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                      <YAxis axisLine={false} tickLine={false} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="avg" stroke="#3498db" fillOpacity={1} fill="url(#colorAvg)" name="Class Average" />
+                      <Area type="monotone" dataKey="top" stroke="#2ecc71" fill="transparent" name="Top Performer" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="panel active-students">
+                <h3>Top Students</h3>
+                <ul className="pulse-list">
+                  <li className="pulse-item green">
+                    <div className="pulse-icon-box"><Icons.Award /></div>
+                    <div className="pulse-text"><strong>Aravind Kumar</strong> - 98% Score (Physics)</div>
+                  </li>
+                  <li className="pulse-item blue" style={{ backgroundColor: '#ebf5fb' }}>
+                    <div className="pulse-icon-box"><Icons.Award /></div>
+                    <div className="pulse-text"><strong>Meera Nair</strong> - 95% Score (Maths)</div>
+                  </li>
+                  <li className="pulse-item orange" style={{ backgroundColor: '#fef5e7' }}>
+                    <div className="pulse-icon-box"><Icons.Award /></div>
+                    <div className="pulse-text"><strong>Rahul Singh</strong> - 92% Score (Chemistry)</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="layout">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-top">
+          <div className="logo-container">
+            <img src={logo} alt="Savra Logo" className="logo-img" />
+          </div>
+
+          <div className="sidebar-menu">
+            <div className="sidebar-label">Main</div>
+            <nav className="nav-links">
+              <a href="#" className={`nav-item ${view === "dashboard" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("dashboard"); }}>
+                <span className="nav-icon"><Icons.Dashboard /></span>
+                Dashboard
+              </a>
+              <a href="#" className={`nav-item ${view === "teachers" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("teachers"); }}>
+                <span className="nav-icon"><Icons.Teachers /></span>
+                Teachers
+              </a>
+              <a href="#" className={`nav-item ${view === "classrooms" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("classrooms"); }}>
+                <span className="nav-icon"><Icons.Classrooms /></span>
+                Classrooms
+              </a>
+              <a href="#" className="nav-item" onClick={(e) => e.preventDefault()}>
+                <span className="nav-icon"><Icons.Reports /></span>
+                Reports
+              </a>
+            </nav>
+          </div>
+        </div>
+
+        <div className="admin-profile">
+          <div className="avatar">SR</div>
+          <div className="admin-info">
+            <span className="admin-role">School Admin</span>
+            <span className="admin-name">Shauryaman Ray</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="content">
+        {renderContent()}
       </main>
     </div>
   );
