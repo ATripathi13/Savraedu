@@ -25,6 +25,7 @@ def seed_from_excel():
         return
 
     df = pd.read_excel(FILE_PATH)
+    df["created_at"] = pd.to_datetime(df["created_at"])
 
     for _, row in df.iterrows():
         data = row.to_dict()
