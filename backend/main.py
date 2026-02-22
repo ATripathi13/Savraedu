@@ -5,11 +5,10 @@ from backend import schemas,crud,insights
 from backend.models import Activity
 from sqlalchemy import func
 from typing import Optional
-# from backend import seed_from_excel
+from backend.seed_from_excel import seed_from_excel
 
 from fastapi.middleware.cors import CORSMiddleware
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
