@@ -61,6 +61,9 @@ const Icons = {
   ),
   Download: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+  ),
+  User: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
   )
 };
 
@@ -69,6 +72,7 @@ export default function App() {
   const [summary, setSummary] = useState(null);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTeacher, setSelectedTeacher] = useState("Diipaal");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,6 +114,22 @@ export default function App() {
     { name: 'Week 2', avg: 78, top: 95 },
     { name: 'Week 3', avg: 72, top: 88 },
     { name: 'Week 4', avg: 80, top: 96 },
+  ];
+
+  const reportTrend = [
+    { name: 'Oct', teacher: 82, school: 75 },
+    { name: 'Nov', teacher: 78, school: 76 },
+    { name: 'Dec', teacher: 85, school: 74 },
+    { name: 'Jan', teacher: 90, school: 77 },
+    { name: 'Feb', teacher: 88, school: 76 },
+  ];
+
+  const teacherList = [
+    { name: "Diipaal", subjects: "Chemistry, Science", avg: 88, lessons: 142, status: "Excellent" },
+    { name: "Shaurya", subjects: "Maths, Physics", avg: 82, lessons: 98, status: "Good" },
+    { name: "Harshita", subjects: "Biology, English", avg: 75, lessons: 110, status: "Average" },
+    { name: "Ankit", subjects: "History, Civics", avg: 65, lessons: 45, status: "Improvement Needed" },
+    { name: "Meera", subjects: "Geography", avg: 92, lessons: 88, status: "Excellent" },
   ];
 
   const renderContent = () => {
@@ -253,7 +273,7 @@ export default function App() {
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
-                  <h1>Diipaal</h1>
+                  <h1>{selectedTeacher}</h1>
                   <p>Performance Overview</p>
                 </div>
               </div>
@@ -261,7 +281,7 @@ export default function App() {
               <div className="header-right">
                 <div className="search-container">
                   <span className="search-icon"><Icons.Search /></span>
-                  <input type="text" className="search-input" placeholder="Ask Savra Ai" />
+                  <input type="text" className="search-input" placeholder="Search teachers..." />
                 </div>
                 <button className="grade-btn">
                   Grade 7 <Icons.ChevronDown />
@@ -487,6 +507,125 @@ export default function App() {
             </div>
           </div>
         );
+      case "reports":
+        return (
+          <div className="reports-view">
+            <header className="header">
+              <div className="header-left">
+                <h1>Teacher Performance Reports</h1>
+                <p>Detailed performance analytics and comparisons</p>
+              </div>
+
+              <div className="header-right">
+                <div className="search-container teacher-search">
+                  <span className="search-icon"><Icons.User /></span>
+                  <select
+                    className="search-input select-teacher"
+                    value={selectedTeacher}
+                    onChange={(e) => setSelectedTeacher(e.target.value)}
+                  >
+                    {teacherList.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+                  </select>
+                </div>
+                <button className="grade-btn">
+                  Export PDF <Icons.Download />
+                </button>
+              </div>
+            </header>
+
+            <div className="dashboard-bottom report-layout">
+              <div className="panel performance-comparison">
+                <h3>{selectedTeacher} vs School Average</h3>
+                <p className="panel-sub">Performance trend comparison across key metrics</p>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <AreaChart data={reportTrend}>
+                      <defs>
+                        <linearGradient id="colorTeacher" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#7c5cff" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#7c5cff" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                      <YAxis axisLine={false} tickLine={false} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="teacher" stroke="#7c5cff" strokeWidth={3} fillOpacity={1} fill="url(#colorTeacher)" name={`${selectedTeacher}'s Score`} />
+                      <Area type="monotone" dataKey="school" stroke="#e0e0e0" strokeWidth={2} strokeDasharray="5 5" fill="transparent" name="School Average" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="panel summary-metrics">
+                <h3>Quick Metrics</h3>
+                <div className="pulse-list">
+                  <div className="pulse-item green">
+                    <div className="pulse-text">Teacher Score: <strong>88%</strong></div>
+                  </div>
+                  <div className="pulse-item blue" style={{ backgroundColor: '#ebf5fb' }}>
+                    <div className="pulse-text">School Rank: <strong>#4 of 52</strong></div>
+                  </div>
+                  <div className="pulse-item yellow">
+                    <div className="pulse-text">Growth Index: <strong>+12%</strong></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="panel teacher-table-panel">
+              <h3>All Teachers Performance Overview</h3>
+              <div className="table-container">
+                <table className="teacher-table">
+                  <thead>
+                    <tr>
+                      <th>Teacher Name</th>
+                      <th>Primary Subjects</th>
+                      <th>Avg Student Score</th>
+                      <th>Lessons Created</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teacherList.map((teacher, idx) => (
+                      <tr key={idx} className={selectedTeacher === teacher.name ? "selected-row" : ""}>
+                        <td>
+                          <div className="table-cell-name">
+                            <div className="mini-avatar">{teacher.name.substring(0, 2)}</div>
+                            {teacher.name}
+                          </div>
+                        </td>
+                        <td>{teacher.subjects}</td>
+                        <td>
+                          <div className="score-badge">
+                            <div className="score-bar" style={{ width: `${teacher.avg}%`, backgroundColor: teacher.avg > 85 ? "#2ecc71" : teacher.avg > 75 ? "#f1c40f" : "#e67e22" }}></div>
+                            <span>{teacher.avg}%</span>
+                          </div>
+                        </td>
+                        <td>{teacher.lessons}</td>
+                        <td>
+                          <span className={`status-tag ${teacher.status.toLowerCase().replace(/ /g, '-')}`}>
+                            {teacher.status}
+                          </span>
+                        </td>
+                        <td>
+                          <button className="view-btn" onClick={() => { setSelectedTeacher(teacher.name); setView("teachers"); }}>View Detailed</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="page-footer">
+              <button className="export-btn">
+                <Icons.Download /> Export Full Table (CSV)
+              </button>
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -516,7 +655,7 @@ export default function App() {
                 <span className="nav-icon"><Icons.Classrooms /></span>
                 Classrooms
               </a>
-              <a href="#" className="nav-item" onClick={(e) => e.preventDefault()}>
+              <a href="#" className={`nav-item ${view === "reports" ? "active" : ""}`} onClick={(e) => { e.preventDefault(); setView("reports"); }}>
                 <span className="nav-icon"><Icons.Reports /></span>
                 Reports
               </a>
