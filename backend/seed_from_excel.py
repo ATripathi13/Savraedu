@@ -32,12 +32,12 @@ def seed_from_excel():
         hash_key = hashlib.md5(str(data).encode()).hexdigest()
 
         activity = Activity(
-            teacher_id=data["teacher_id"],
-            teacher_name=data["teacher_name"],
-            activity_type=data["activity_type"],
-            subject=data["subject"],
-            grade=data["grade"],
-            created_at=data["created_at"],
+            teacher_id=data["Teacher_id"],
+            teacher_name=data["Teacher_name"],
+            activity_type=data["Activity_type"],
+            subject=data["Subject"],
+            grade=data["Grade"],
+            created_at=data["Created_at"],
             hash_key=hash_key,
         )
 
