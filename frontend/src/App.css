@@ -786,3 +786,65 @@ body {
   background-color: var(--primary);
   color: white;
 }
+
+/* Print Styles for Professional Reports */
+@media print {
+
+  .no-print,
+  .sidebar,
+  .back-btn,
+  .tabs,
+  .header-right,
+  .search-container,
+  .page-footer,
+  .actions-cell,
+  .mini-tabs,
+  .export-btn,
+  .view-btn,
+  .select-styled,
+  .no-print * {
+    display: none !important;
+  }
+
+  .layout {
+    display: block !important;
+  }
+
+  .content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .panel {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+    margin-bottom: 20px !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .header h1 {
+    color: var(--primary) !important;
+    font-size: 24pt !important;
+  }
+
+  .header p {
+    font-size: 12pt !important;
+  }
+
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: 300px !important;
+  }
+}

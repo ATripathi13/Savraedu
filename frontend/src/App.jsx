@@ -139,10 +139,29 @@ export default function App() {
     { name: 'Feb', teacher: (selectedTeacherData?.avg || 82) + 6, school: 76 },
   ];
 
+  // Export functions
+  const exportToCSV = (data, filename) => {
+    if (!data || data.length === 0) return;
+    const headers = Object.keys(data[0]).join(",");
+    const rows = data.map(obj => Object.values(obj).join(",")).join("\n");
+    const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + rows;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToPDF = () => {
+    window.print();
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
 
   const renderHeaderRight = (placeholder) => (
-    <div className="header-right">
+    <div className="header-right no-print">
       <div className="search-container">
         <span className="search-icon"><Icons.Search /></span>
         <input
@@ -186,7 +205,7 @@ export default function App() {
             <section className="insights-section">
               <div className="insights-header">
                 <h2>Insights</h2>
-                <div className="tabs">
+                <div className="tabs no-print">
                   <button className="tab active">This Week</button>
                   <button className="tab">This Month</button>
                   <button className="tab">This Year</button>
@@ -299,7 +318,7 @@ export default function App() {
           <div className="teachers-view">
             <header className="header">
               <div className="header-left-row">
-                <button className="back-btn" onClick={() => { setView("dashboard"); setSearchQuery(""); }}>
+                <button className="back-btn no-print" onClick={() => { setView("dashboard"); setSearchQuery(""); }}>
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
@@ -314,7 +333,7 @@ export default function App() {
               <p>Subject: <strong>{selectedTeacherData?.subjects || "General"}</strong></p>
               <div className="teacher-meta-row">
                 <p>Grade Taught: <strong>Class 7, Class 8, Class 9, Class 10</strong></p>
-                <div className="tabs mini-tabs">
+                <div className="tabs mini-tabs no-print">
                   <button className="tab active">This Week</button>
                   <button className="tab">This Month</button>
                   <button className="tab">This Year</button>
@@ -377,7 +396,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="panel recent-activity">
+              <div className="panel recent-activity no-print">
                 <h3>Filtered Results</h3>
                 <div className="pulse-list">
                   {filteredTeachers.slice(0, 3).map((t, i) => (
@@ -391,8 +410,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="page-footer">
-              <button className="export-btn">
+            <div className="page-footer no-print">
+              <button className="export-btn" onClick={() => exportToCSV([selectedTeacherData], `${selectedTeacherName}_Report`)}>
                 <Icons.Download /> Export Report (CSV)
               </button>
             </div>
@@ -403,7 +422,7 @@ export default function App() {
           <div className="classrooms-view">
             <header className="header">
               <div className="header-left-row">
-                <button className="back-btn" onClick={() => { setView("dashboard"); setSearchQuery(""); }}>
+                <button className="back-btn no-print" onClick={() => { setView("dashboard"); setSearchQuery(""); }}>
                   <Icons.ChevronLeft />
                 </button>
                 <div className="teacher-profile-info">
@@ -447,6 +466,12 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            <div className="page-footer no-print">
+              <button className="export-btn" onClick={exportToPDF} style={{ backgroundColor: '#2ecc71' }}>
+                <Icons.Download /> PDF Summary
+              </button>
+            </div>
           </div>
         );
       case "reports":
@@ -465,7 +490,7 @@ export default function App() {
                 <div className="panel-header-row">
                   <h3>{selectedTeacherName} vs School Average</h3>
                   <select
-                    className="select-teacher select-styled mini"
+                    className="select-teacher select-styled mini no-print"
                     value={selectedTeacherName}
                     onChange={(e) => setSelectedTeacherName(e.target.value)}
                   >
@@ -510,7 +535,10 @@ export default function App() {
             </div>
 
             <div className="panel teacher-table-panel">
-              <h3>Teacher Performance Overview</h3>
+              <div className="panel-header-row">
+                <h3>Teacher Performance Overview</h3>
+                <button className="view-btn no-print" onClick={exportToPDF} style={{ padding: '4px 12px' }}>Export PDF</button>
+              </div>
               <div className="table-container">
                 <table className="teacher-table">
                   <thead>
@@ -520,7 +548,7 @@ export default function App() {
                       <th>Avg Student Score</th>
                       <th>Lessons Created</th>
                       <th>Status</th>
-                      <th>Action</th>
+                      <th className="no-print">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -545,7 +573,7 @@ export default function App() {
                             {teacher.status}
                           </span>
                         </td>
-                        <td>
+                        <td className="no-print">
                           <button className="view-btn" onClick={() => { setSelectedTeacherName(teacher.name); setView("teachers"); setSearchQuery(""); }}>View Detailed</button>
                         </td>
                       </tr>
@@ -556,8 +584,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="page-footer">
-              <button className="export-btn">
+            <div className="page-footer no-print">
+              <button className="export-btn" onClick={() => exportToCSV(teachers, "School_Wide_Teacher_Report")}>
                 <Icons.Download /> Export Full Table (CSV)
               </button>
             </div>
@@ -571,7 +599,7 @@ export default function App() {
   return (
     <div className="layout">
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className="sidebar no-print">
         <div className="sidebar-top">
           <div className="logo-container">
             <img src={logo} alt="Savra Logo" className="logo-img" />
