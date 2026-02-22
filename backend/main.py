@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends, Query
 from sqlalchemy.orm import Session
-from database import Base, engine, SessionLocal
+from backend.database import Base, engine, SessionLocal
 import schemas 
 import crud
 import insights
-from models import Activity
+from backend.models import Activity
 from sqlalchemy import func
 from typing import Optional
 
